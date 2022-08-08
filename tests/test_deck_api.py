@@ -1,10 +1,14 @@
+from telnetlib import STATUS
 import requests
 import pytest
 
 
+url = "https://www.deckofcardsapi.com"
+
+
 @pytest.fixture(scope="session")
 def deck_data():
-    response = requests.post("http://deckofcardsapi.com/api/deck/new/shuffle/?deck_count=1")
+    response = requests.post(f"{url}/api/deck/new/shuffle/?deck_count=1")
     
     return response.json()
 
@@ -15,7 +19,7 @@ def test_draw_a_cart_from_a_deck(deck_data):
     # Recebe o valor da propriedade remaining antes de realizar a requisição que remove uma carta
     remaining_cards_before_request = deck_data["remaining"]
     
-    response = requests.post(f"http://deckofcardsapi.com/api/deck/{deck_id}/draw/?count=1")
+    response = requests.post(f"{url}/api/deck/{deck_id}/draw/?count=1")
     
     # Recebe o valor da propriedade remaining depois de realizar a requisição que remove uma carta
     remaining_cards_after_request = response.json()["remaining"]
@@ -35,21 +39,25 @@ def test_draw_a_cart_from_a_deck(deck_data):
     
 def test_reshuffle_cards_from_a_deck(deck_data):
     deck_id = deck_data["deck_id"]
+
+    response = requests.post(f"{url}/api/deck/{deck_id}/shuffle/")
     
-    response = requests.post(f"http://deckofcardsapi.com/api/deck/{deck_id}/shuffle/")
-    
+    deck_shuffled = response.json()["shuffled"]
+        
     status_code_is_ok = response.status_code in [200, 201]
     
     print("Reshuffle cards from the deck")
     
     if status_code_is_ok: print("\nStatus code is ok")
     assert status_code_is_ok
+    if deck_shuffled: print("Deck reshuffled!")
+    assert deck_shuffled
     
 
 def test_get_a_brand_new_deck(deck_data):
     old_deck_id = deck_data["deck_id"]
     
-    response = requests.post("https://www.deckofcardsapi.com/api/deck/new/")
+    response = requests.post(f"{url}/api/deck/new/")
     
     new_deck_id = response.json()["deck_id"]
     
@@ -63,3 +71,15 @@ def test_get_a_brand_new_deck(deck_data):
     assert new_deck_created
     if status_code_is_ok: print("Status code is ok")
     assert status_code_is_ok
+    
+
+# def test_create_a_pile(deck_data):
+#     deck_id = deck_data["deck_id"]
+    
+#     pile_name = "teste"
+    
+#     response = requests.post(f"{url}/api/deck/{deck_id}/pile/{pile_name}/add/?cards=AS")
+    
+#     status_code_is_ok = response.status_code in [200, 201]
+    
+#     print(response.json())
