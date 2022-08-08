@@ -40,3 +40,20 @@ def test_reshuffle_cards_from_a_deck(deck_data):
     
     if status_code_is_ok: print("\nStatus code is ok")
     assert status_code_is_ok
+    
+
+def test_get_a_brand_new_deck(deck_data):
+    old_deck_id = deck_data["deck_id"]
+    
+    response = requests.post("https://www.deckofcardsapi.com/api/deck/new/")
+    
+    new_deck_id = response.json()["deck_id"]
+    
+    new_deck_created = old_deck_id != new_deck_id
+    
+    status_code_is_ok = response.status_code in [200, 201]
+    
+    if new_deck_created: print("\nNew deck created")
+    assert new_deck_created
+    if status_code_is_ok: print("Status code is ok")
+    assert status_code_is_ok
