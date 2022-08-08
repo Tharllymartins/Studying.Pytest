@@ -29,3 +29,14 @@ def test_draw_a_cart_from_a_deck(deck_data):
     if status_code_is_ok: print("\nStatus code is ok")
     assert remaining_cards_has_decreased
     if remaining_cards_has_decreased: print("Remainig cards has decreased")
+    
+    
+def test_reshuffle_cards_from_a_deck(deck_data):
+    deck_id = deck_data["deck_id"]
+    
+    response = requests.post(f"http://deckofcardsapi.com/api/deck/{deck_id}/shuffle/")
+    
+    status_code_is_ok = response.status_code in [200, 201]
+    
+    if status_code_is_ok: print("\nStatus code is ok")
+    assert status_code_is_ok
