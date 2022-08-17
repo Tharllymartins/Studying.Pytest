@@ -1,6 +1,6 @@
-from telnetlib import STATUS
 import requests
 import pytest
+from model.deck import DeckModel
 
 
 url = "https://www.deckofcardsapi.com"
@@ -9,15 +9,22 @@ url = "https://www.deckofcardsapi.com"
 @pytest.fixture(scope="session")
 def deck_data():
     response = requests.post(f"{url}/api/deck/new/shuffle/?deck_count=1")
+    response_json = response.json()
+    deck = DeckModel(
+        deck_id= response_json["deck_id"],
+        remaining= response_json["remaining"],
+        shuffled= response_json["shuffled"],
+        success= response_json["success"]
+    )
     
-    return response.json()
+    return deck
 
 
-def test_draw_a_cart_from_a_deck(deck_data):
-    deck_id = deck_data["deck_id"]
+def test_draw_a_cart_from_a_deck(deck_data: DeckModel):
+    deck_id = deck_data.deck_id
     
     # Recebe o valor da propriedade remaining antes de realizar a requisição que remove uma carta
-    remaining_cards_before_request = deck_data["remaining"]
+    remaining_cards_before_request = deck_data.remaining
     
     response = requests.post(f"{url}/api/deck/{deck_id}/draw/?count=1")
     
@@ -37,8 +44,8 @@ def test_draw_a_cart_from_a_deck(deck_data):
     if remaining_cards_has_decreased: print("Remainig cards has decreased")
     
     
-def test_reshuffle_cards_from_a_deck(deck_data):
-    deck_id = deck_data["deck_id"]
+def test_reshuffle_cards_from_a_deck(deck_data: DeckModel):
+    deck_id = deck_data.deck_id
 
     response = requests.post(f"{url}/api/deck/{deck_id}/shuffle/")
     
@@ -54,8 +61,8 @@ def test_reshuffle_cards_from_a_deck(deck_data):
     assert deck_shuffled
     
 
-def test_get_a_brand_new_deck(deck_data):
-    old_deck_id = deck_data["deck_id"]
+def test_get_a_brand_new_deck(deck_data: DeckModel):
+    old_deck_id = deck_data.deck_id
     
     response = requests.post(f"{url}/api/deck/new/")
     
